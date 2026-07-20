@@ -1,0 +1,5 @@
+node_modules/
+logs/run-*.jsonl
+logs/progress-*.md
+logs/.open-run.json
+.DS_Store

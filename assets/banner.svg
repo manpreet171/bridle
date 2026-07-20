@@ -1,0 +1,77 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="640" viewBox="0 0 1280 640" role="img" aria-label="Bridle — own the run, not just the prompt">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0b1120"/>
+      <stop offset="1" stop-color="#111a2e"/>
+    </linearGradient>
+    <linearGradient id="amber" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#f59e0b"/>
+      <stop offset="1" stop-color="#f97316"/>
+    </linearGradient>
+    <linearGradient id="rein" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f59e0b"/>
+      <stop offset="0.6" stop-color="#f97316"/>
+      <stop offset="1" stop-color="#38bdf8"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.28" cy="0.35" r="0.7">
+      <stop offset="0" stop-color="#f59e0b" stop-opacity="0.12"/>
+      <stop offset="1" stop-color="#f59e0b" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M40 0H0V40" fill="none" stroke="#1e293b" stroke-width="1"/>
+    </pattern>
+  </defs>
+
+  <rect width="1280" height="640" fill="url(#bg)"/>
+  <rect width="1280" height="640" fill="url(#grid)" opacity="0.55"/>
+  <rect width="1280" height="640" fill="url(#glow)"/>
+
+  <!-- rein: a run's trace curving through a control ring -->
+  <path d="M 40 470 C 220 470 240 300 400 300 C 560 300 620 190 780 210 C 940 230 1040 150 1240 170"
+        fill="none" stroke="url(#rein)" stroke-width="5" stroke-linecap="round" opacity="0.9"/>
+  <path d="M 40 486 C 224 486 250 322 404 320 C 566 318 630 214 786 232 C 942 250 1044 172 1240 190"
+        fill="none" stroke="#334155" stroke-width="2" stroke-linecap="round" opacity="0.8"/>
+  <!-- control ring -->
+  <circle cx="400" cy="300" r="34" fill="none" stroke="#e2e8f0" stroke-width="5"/>
+  <circle cx="400" cy="300" r="34" fill="none" stroke="url(#amber)" stroke-width="5" stroke-dasharray="120 94" stroke-linecap="round"/>
+  <circle cx="400" cy="300" r="8" fill="#f59e0b"/>
+  <!-- trace events along the rein -->
+  <circle cx="180" cy="440" r="7" fill="#38bdf8"/>
+  <circle cx="620" cy="242" r="7" fill="#f97316"/>
+  <circle cx="880" cy="212" r="7" fill="#38bdf8"/>
+  <circle cx="1080" cy="172" r="7" fill="#f59e0b"/>
+
+  <!-- wordmark -->
+  <text x="96" y="150" font-family="Georgia, 'Times New Roman', serif" font-size="104" font-weight="bold" letter-spacing="6" fill="#f8fafc">BRIDLE</text>
+  <rect x="100" y="176" width="330" height="6" rx="3" fill="url(#amber)"/>
+  <text x="96" y="228" font-family="ui-monospace, Consolas, 'Cascadia Code', monospace" font-size="30" fill="#94a3b8">Own the run, not just the prompt.</text>
+
+  <!-- HARNESS.md card -->
+  <g>
+    <rect x="770" y="292" width="416" height="292" rx="16" fill="#0f172a" stroke="#334155" stroke-width="2"/>
+    <rect x="770" y="292" width="416" height="46" rx="16" fill="#1e293b"/>
+    <rect x="770" y="322" width="416" height="16" fill="#1e293b"/>
+    <circle cx="796" cy="315" r="6" fill="#f87171"/>
+    <circle cx="818" cy="315" r="6" fill="#fbbf24"/>
+    <circle cx="840" cy="315" r="6" fill="#34d399"/>
+    <text x="866" y="322" font-family="ui-monospace, Consolas, monospace" font-size="21" fill="#e2e8f0">HARNESS.md</text>
+
+    <g font-family="ui-monospace, Consolas, monospace" font-size="20" fill="#cbd5e1">
+      <rect x="794" y="356" width="12" height="12" rx="3" fill="#f59e0b"/>
+      <text x="818" y="368">1 · Run Charter</text>
+      <rect x="794" y="398" width="12" height="12" rx="3" fill="#f97316"/>
+      <text x="818" y="410">2 · Trace Contract</text>
+      <rect x="794" y="440" width="12" height="12" rx="3" fill="#38bdf8"/>
+      <text x="818" y="452">3 · Skill Lattice</text>
+      <rect x="794" y="482" width="12" height="12" rx="3" fill="#34d399"/>
+      <text x="818" y="494">4 · Governance Lane</text>
+    </g>
+    <g font-family="ui-monospace, Consolas, monospace" font-size="18" fill="#64748b">
+      <text x="794" y="546">plan → act → evaluate</text>
+      <text x="1064" y="546" fill="#34d399">✔ lint</text>
+    </g>
+  </g>
+
+  <!-- footer -->
+  <text x="96" y="576" font-family="ui-monospace, Consolas, monospace" font-size="22" fill="#64748b">Harness Script Engineering · runs as artifacts · zero-dependency CLI</text>
+</svg>

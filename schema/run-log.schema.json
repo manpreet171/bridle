@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/bridle/schema/run-log.schema.json",
+  "title": "Bridle run-log event",
+  "description": "One line of a logs/run-<run_id>.jsonl file. Append-only. Every event is stamped with the run and the harness version that governed it.",
+  "type": "object",
+  "required": ["ts", "run_id", "harness_version", "agent_id", "event", "phase"],
+  "properties": {
+    "ts": {
+      "type": "string",
+      "format": "date-time",
+      "description": "UTC timestamp of the event"
+    },
+    "run_id": {
+      "type": "string",
+      "description": "Identity of the run, e.g. scrape-20260720T101500Z-a1b2c3"
+    },
+    "harness_version": {
+      "type": "string",
+      "description": "Version field of the HARNESS file governing this run"
+    },
+    "harness_hash": {
+      "type": "string",
+      "description": "SHA-256 of the HARNESS file content at run start, so edits mid-run are detectable"
+    },
+    "agent_id": {
+      "type": "string",
+      "description": "Which agent/model executed the step, e.g. claude-sonnet-5"
+    },
+    "phase": {
+      "type": "string",
+      "enum": ["plan", "act", "evaluate", "escalate", "recover"],
+      "description": "Which phase of the run loop this event belongs to"
+    },
+    "event": {
+      "type": "string",
+      "enum": [
+        "run_start",
+        "run_end",
+        "tool_call",
+        "code_edit",
+        "db_write",
+        "api_hit",
+        "check_pass",
+        "check_fail",
+        "escalation",
+        "note"
+      ]
+    },
+    "detail": {
+      "type": "object",
+      "description": "Event-class-specific fields, per the Trace Contract table",
+      "additionalProperties": true
+    },
+    "prompt_file": {
+      "type": "string",
+      "description": "prompts/*.md file this step executes, if any"
+    },
+    "verdict": {
+      "type": "string",
+      "enum": ["good", "bad"],
+      "description": "Only on run_end: did the run meet the Charter's definition of a good run"
+    }
+  },
+  "additionalProperties": false
+}

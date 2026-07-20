@@ -1,0 +1,40 @@
+{
+  "name": "bridle-harness",
+  "version": "1.0.0",
+  "description": "Harness Script Engineering for AI agents — own the run, not just the prompt. Templates, a trace schema, and a zero-dependency CLI for HARNESS.md.",
+  "type": "module",
+  "bin": {
+    "bridle": "bin/bridle.mjs"
+  },
+  "scripts": {
+    "lint:harness": "node bin/bridle.mjs lint HARNESS.md",
+    "test": "node bin/bridle.mjs lint HARNESS.md"
+  },
+  "keywords": [
+    "ai-agents",
+    "harness",
+    "agent-harness",
+    "harness-script-engineering",
+    "vibe-engineering",
+    "agents-md",
+    "llm",
+    "observability",
+    "governance"
+  ],
+  "author": {
+    "name": "Manpreet Singh",
+    "email": "singh.manpreet171900@gmail.com",
+    "url": "https://www.linkedin.com/in/manpreet17/"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "license": "MIT",
+  "files": [
+    "bin",
+    "templates",
+    "schema",
+    "docs",
+    "README.md"
+  ]
+}
