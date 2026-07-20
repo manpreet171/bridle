@@ -57,7 +57,7 @@ can commit today. Read the full argument in the [Manifesto](docs/manifesto.md).
 
 ```bash
 # in your project
-npx github:YOURNAME/bridle init
+npx github:manpreet171/bridle init
 ```
 
 You get:
