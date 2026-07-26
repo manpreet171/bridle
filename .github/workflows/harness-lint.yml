@@ -21,9 +21,16 @@ jobs:
           node-version: 20
       - name: Lint root harness
         run: node bin/bridle.mjs lint HARNESS.md
-      - name: Lint example harnesses
+      - name: Lint tier-3 example harnesses
         run: |
-          for f in examples/*/HARNESS.md; do
+          for f in examples/scraping-pipeline/HARNESS.md examples/nightly-coding-agent/HARNESS.md; do
             echo "--- $f"
             node bin/bridle.mjs lint "$f"
           done
+      - name: Lint tier-1 example at its own tier
+        run: node bin/bridle.mjs lint examples/minimal-tier1/HARNESS.md --tier 1
+      - name: Tier-1 example must fail the default tier
+        run: |
+          if node bin/bridle.mjs lint examples/minimal-tier1/HARNESS.md; then
+            echo "expected tier-1 example to fail at tier 3"; exit 1
+          fi

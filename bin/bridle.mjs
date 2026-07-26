@@ -21,12 +21,13 @@ const PKG_ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const LOGS = join(ROOT, "logs");
 const OPEN_RUN = join(LOGS, ".open-run.json");
 
+// tier: the lowest adoption tier that requires this section (see README "three tiers")
 const REQUIRED_SECTIONS = [
-  { re: /^##\s*1\.\s*Run Charter/m, name: "1. Run Charter" },
-  { re: /^##\s*2\.\s*Trace Contract/m, name: "2. Trace Contract" },
-  { re: /^##\s*3\.\s*Skill Lattice/m, name: "3. Skill Lattice" },
-  { re: /^##\s*4\.\s*Governance Lane/m, name: "4. Governance Lane" },
-  { re: /^##\s*5\.\s*Recovery/m, name: "5. Recovery & Escalation" },
+  { re: /^##\s*1\.\s*Run Charter/m, name: "1. Run Charter", tier: 1 },
+  { re: /^##\s*2\.\s*Trace Contract/m, name: "2. Trace Contract", tier: 2 },
+  { re: /^##\s*3\.\s*Skill Lattice/m, name: "3. Skill Lattice", tier: 3 },
+  { re: /^##\s*4\.\s*Governance Lane/m, name: "4. Governance Lane", tier: 3 },
+  { re: /^##\s*5\.\s*Recovery/m, name: "5. Recovery & Escalation", tier: 3 },
 ];
 
 const REQUIRED_FIELDS = [
@@ -92,14 +93,15 @@ function init() {
 
 /* ------------------------------------------------------------------ lint */
 
-function lint(fileArg) {
+function lint(fileArg, tier) {
   const file = findHarness(fileArg);
   const { text, version } = harnessMeta(file);
-  console.log(`Linting ${file} (version ${version})\n`);
+  console.log(`Linting ${file} (version ${version}, tier ${tier})\n`);
   let failures = 0;
 
   console.log("Pillar sections:");
   for (const s of REQUIRED_SECTIONS) {
+    if (s.tier > tier) { console.log(`  · ${s.name} (not required at tier ${tier})`); continue; }
     if (s.re.test(text)) ok(s.name); else { bad(`missing section: ${s.name}`); failures++; }
   }
 
@@ -120,7 +122,7 @@ function lint(fileArg) {
   else { bad(`${real.length} template placeholder(s) still unfilled, e.g. ${real[0]}`); failures++; }
 
   console.log(failures === 0
-    ? "\nPASS — this harness honors all four pillars."
+    ? `\nPASS — this harness holds at tier ${tier}.${tier < 3 ? ` Move to tier ${tier + 1} when it stops being a lie.` : ""}`
     : `\nFAIL — ${failures} problem(s). A run under this script has undefined behavior.`);
   process.exit(failures === 0 ? 0 : 1);
 }
@@ -210,7 +212,15 @@ function valueOf(args, flag) {
 const [cmd, sub, ...rest] = process.argv.slice(2);
 switch (cmd) {
   case "init": init(); break;
-  case "lint": lint(sub); break;
+  case "lint": {
+    const all = [sub, ...rest].filter(Boolean);
+    const tierArg = valueOf(all, "--tier");
+    const tier = tierArg ? Number(tierArg) : 3;
+    if (![1, 2, 3].includes(tier)) die("--tier must be 1, 2, or 3");
+    const fileArg = all.find((a) => !a.startsWith("--") && a !== tierArg);
+    lint(fileArg, tier);
+    break;
+  }
   case "status": status(); break;
   case "run":
     if (sub === "start") runStart(rest);
@@ -222,7 +232,7 @@ switch (cmd) {
     console.log(`bridle — Harness Script Engineering CLI
 
   bridle init                          scaffold HARNESS.md, AGENTS.md, prompts/, skills/, logs/
-  bridle lint [file]                   verify a HARNESS file honors the four pillars
+  bridle lint [file] [--tier 1|2|3]    verify a HARNESS file honors the pillars (default tier 3)
   bridle run start <workflow> [--agent <id>] [--harness <file>]
   bridle run log <event> [--phase p] [--prompt file] [--detail '{...}']
   bridle run end <good|bad> [--detail '...']

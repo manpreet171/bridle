@@ -1,6 +1,6 @@
 {
   "name": "bridle-harness",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Harness Script Engineering for AI agents — own the run, not just the prompt. Templates, a trace schema, and a zero-dependency CLI for HARNESS.md.",
   "type": "module",
   "bin": {

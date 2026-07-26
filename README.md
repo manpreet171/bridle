@@ -39,6 +39,21 @@ HARNESS.md   →  the OS for every agent run     (this is Bridle)
 
 Prompts became artifacts. **Now runs become artifacts too.**
 
+## Before / after
+
+You set an agent loose on your backlog overnight. In the morning you ask what it
+did. It edited eleven files, logged nothing, and merged something into `main` —
+and the only record is a scrollback buffer that's already gone.
+
+With Bridle:
+
+```
+GOOD  nightly-20260720T1015Z-a1b2c3
+      harness v2.0.1 (9f3c01d2ab77) · 14 events · 0 escalations · 3 PRs, 0 direct pushes
+```
+
+More cases in [examples/](examples/).
+
 ## Why
 
 "Vibe Engineering" fixed prompt chaos: short prompts, AI-written plans, human
@@ -109,6 +124,32 @@ Plus a fifth section, **Recovery & Escalation**: a per-run progress log, a resum
 protocol so a restarted agent never redoes finished work, and explicit triggers
 for stopping and calling a human. Deep dive: [docs/pillars.md](docs/pillars.md).
 
+## Written down, not locked down
+
+Bridle is a document and a linter. It never sits between your agent and its work:
+no server, no daemon, no API key, no runtime dependency, nothing phoning home, and
+no added latency on your runs. If you delete the CLI tomorrow, your `HARNESS.md` is
+still a useful document your agents read.
+
+What it will never do is pretend it *enforced* something it only *recorded*. The
+harness declares the policy; your trace proves what actually happened; branch
+protection and CI are what physically stop a bad merge. Bridle makes the gap
+between those three visible instead of imaginary.
+
+## Start small: three tiers
+
+You don't have to write all four pillars on day one. `--tier` lets the linter hold
+you to as much as you've actually adopted, so CI stays green while you grow:
+
+```bash
+npx bridle lint --tier 1     # Run Charter only — what is a good run?
+npx bridle lint --tier 2     # + Trace Contract — what must be logged?
+npx bridle lint              # all four pillars + recovery (tier 3, the default)
+```
+
+One honest tier-1 harness beats four aspirational ones. Move up when the previous
+tier stops being a lie.
+
 ## The CLI
 
 One file, zero dependencies, Node 18+: [`bin/bridle.mjs`](bin/bridle.mjs).
@@ -116,7 +157,7 @@ One file, zero dependencies, Node 18+: [`bin/bridle.mjs`](bin/bridle.mjs).
 | Command | What it does |
 | ------- | ------------ |
 | `bridle init` | Scaffold `HARNESS.md`, `AGENTS.md`, `prompts/`, `skills/`, `logs/` |
-| `bridle lint [file]` | Verify a harness honors all four pillars + no unfilled placeholders. Exit 1 on failure — CI-friendly |
+| `bridle lint [file] [--tier 1\|2\|3]` | Verify a harness honors the pillars for your tier + no unfilled placeholders. Exit 1 on failure — CI-friendly |
 | `bridle run start <workflow>` | Mint a `run_id`, stamp harness version + SHA-256 hash |
 | `bridle run log <event>` | Append a trace event (`tool_call`, `code_edit`, `db_write`, `api_hit`, `check_pass`, `check_fail`, `escalation`, `note`) |
 | `bridle run end <good\|bad>` | Close the run with a Charter verdict |
@@ -137,7 +178,8 @@ bridle/
 │   ├── AGENTS.template.md         # project-OS template
 │   ├── SKILL.template.md          # skill + lattice bands
 │   └── PROMPT.template.md         # AI-written plan, human-approved
-├── examples/
+├── examples/                      # real harnesses, all lint-clean at their tier
+│   ├── minimal-tier1/             # ★ start here — a Charter and nothing else
 │   ├── scraping-pipeline/         # 24h data pipeline, zero code edits
 │   └── nightly-coding-agent/      # PR-only maintenance bot
 ├── schema/run-log.schema.json     # trace event schema (JSON Schema 2020-12)
@@ -159,6 +201,30 @@ it a script to follow:
 - **Your observability stack** ingests the JSONL; the schema is stable and tiny.
 - **GitHub** enforces the Governance Lane with the included workflow + PR template.
 
+Good neighbours, not competitors:
+
+- [**ponytail**](https://github.com/DietrichGebert/ponytail) shrinks what your agent
+  *builds*; Bridle governs how its *run behaves*. No overlap — ponytail never looks
+  at your run policy, Bridle never opines on your code.
+- **LangSmith / PostHog / Supabase** are trace *sinks*. Bridle's Trace Contract
+  declares what must reach them; they store and visualize it.
+- **`AGENTS.md`** is the project OS. Bridle is the run OS. Ship both.
+
+## Uninstall
+
+Nothing to uninstall, really — there's no global install. But to remove it cleanly:
+
+```bash
+rm HARNESS.md                    # or harness/*.HARNESS.md
+rm -rf logs/                     # your run traces — read them before deleting
+rm .github/workflows/harness-lint.yml
+```
+
+State Bridle writes outside those paths: **none.** The only file that isn't obvious
+is `logs/.open-run.json`, which tracks the currently open run and is removed with
+`logs/`. Your `AGENTS.md`, `prompts/`, and `skills/` are yours — `init` created them
+but nothing in Bridle depends on them, so leave them.
+
 ## FAQ
 
 **Is this a replacement for AGENTS.md / Vibe Engineering?**
@@ -171,6 +237,18 @@ As well as they follow `AGENTS.md` — which is to say: well when it's loaded, a
 verifiably when you check. That's why the Trace Contract exists: the trace is how
 you *audit* compliance, not hope for it. Anything your orchestrator can enforce
 mechanically (hooks, branch protection, CI lint), move from hope to enforcement.
+
+**Does it need a config file?**
+No. No config, no env vars, no API key, no account. `HARNESS.md` and the CLI are the
+whole product.
+
+**Do you have benchmark numbers?**
+No — and I'm not going to invent any. Bridle is a documentation-and-audit discipline,
+not a model intervention; there's no honest way to A/B "runs you could explain
+afterwards" as a percentage. What I can show you is the mechanism: a trace stamped
+with the harness version and hash, and a linter that exits 1. Judge it on that. If
+you run a real comparison, open an issue — I'll link it here, including if it's
+unflattering.
 
 **One HARNESS.md or many?**
 One per long-running workflow. Root `HARNESS.md` for your main one; extras in

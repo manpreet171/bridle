@@ -44,6 +44,18 @@ node bin/bridle.mjs lint
 Fix until it passes. The linter checks all four pillars, the loop, the good/bad
 run definitions, and leftover template placeholders.
 
+**Short on time, or only sure about question 1?** Start at tier 1 and grow:
+
+```bash
+node bin/bridle.mjs lint --tier 1    # Run Charter only
+node bin/bridle.mjs lint --tier 2    # + Trace Contract
+node bin/bridle.mjs lint             # all four pillars (default)
+```
+
+A tier-1 harness that's true beats a tier-3 harness with empty headings. See
+[examples/minimal-tier1](../examples/minimal-tier1/HARNESS.md) for what honest
+tier 1 looks like.
+
 ## Minute 20–25: wire the agent
 
 Add one line to your `AGENTS.md` (the template already has it):
