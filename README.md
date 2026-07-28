@@ -6,7 +6,7 @@
 
 <p align="center"><strong>Harness Script Engineering for AI agents.<br/>Own the run, not just the prompt.</strong></p>
 
-<p align="center">Created by <a href="https://www.linkedin.com/in/manpreet17/">Manpreet Singh</a></p>
+<p align="center">Created by <a href="https://www.linkedin.com/in/manpreet17/">Manpreet Singh</a> · Part of <a href="https://singhlabs.dev/bridle/">Singh Labs</a></p>
 
 <p align="center">
   <a href="#quickstart">Quickstart</a> ·
