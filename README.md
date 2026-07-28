@@ -278,7 +278,7 @@ version when you touch it, link your `run_id` in the PR template, and make sure
 
 - LinkedIn: [linkedin.com/in/manpreet17](https://www.linkedin.com/in/manpreet17/)
 - Medium: [medium.com/@singh.manpreet171900](https://medium.com/@singh.manpreet171900)
-- Email: [singh.manpreet171900@gmail.com](mailto:singh.manpreet171900@gmail.com)
+- Email: [info@singhlabs.dev](mailto:info@singhlabs.dev)
 
 If you write about Harness Script Engineering or ship a `HARNESS.md` because of
 this repo, I'd genuinely like to hear about it.

@@ -6,7 +6,7 @@
 | Field            | Value                                            |
 | ---------------- | ------------------------------------------------ |
 | Harness version  | `1.0.0`                                          |
-| Owner            | Manpreet Singh (singh.manpreet171900@gmail.com)  |
+| Owner            | Manpreet Singh (info@singhlabs.dev)  |
 | Applies to       | any coding agent editing this repository         |
 | Companion files  | `templates/`, `schema/run-log.schema.json`       |
 | Log sink         | `logs/run-*.jsonl`                               |
