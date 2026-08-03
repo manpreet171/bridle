@@ -89,12 +89,12 @@ your-project/
 Fill in `HARNESS.md`, then make it real:
 
 ```bash
-npx bridle lint                      # refuses a harness missing any pillar
-npx bridle run start scrape --agent claude-sonnet-5
-npx bridle run log tool_call --detail '{"tool":"oxylabs","status":"ok"}'
-npx bridle run log check_pass --phase evaluate
-npx bridle run end good
-npx bridle status
+npx github:manpreet171/bridle lint                      # refuses a harness missing any pillar
+npx github:manpreet171/bridle run start scrape --agent claude-sonnet-5
+npx github:manpreet171/bridle run log tool_call --detail '{"tool":"oxylabs","status":"ok"}'
+npx github:manpreet171/bridle run log check_pass --phase evaluate
+npx github:manpreet171/bridle run end good
+npx github:manpreet171/bridle status
 ```
 
 ```
@@ -142,9 +142,9 @@ You don't have to write all four pillars on day one. `--tier` lets the linter ho
 you to as much as you've actually adopted, so CI stays green while you grow:
 
 ```bash
-npx bridle lint --tier 1     # Run Charter only — what is a good run?
-npx bridle lint --tier 2     # + Trace Contract — what must be logged?
-npx bridle lint              # all four pillars + recovery (tier 3, the default)
+npx github:manpreet171/bridle lint --tier 1     # Run Charter only — what is a good run?
+npx github:manpreet171/bridle lint --tier 2     # + Trace Contract — what must be logged?
+npx github:manpreet171/bridle lint              # all four pillars + recovery (tier 3, the default)
 ```
 
 One honest tier-1 harness beats four aspirational ones. Move up when the previous
