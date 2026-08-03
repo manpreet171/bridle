@@ -257,19 +257,32 @@ function lintAgents(fileArg) {
 
   if (!text.trim()) { bad("the file is empty"); process.exit(1); }
 
-  // 1. Runnable commands. An AGENTS.md with no command is a wish, not an instruction.
+  // AGENTS.md covers two different jobs and they need different checks. A
+  // project file tells an agent how to build and test your code; a policy file
+  // tells it how to behave. Demanding `npm test` in a security policy is a false
+  // positive, and a linter that cries wolf gets ignored like any other.
   const fences = text.match(/```[\s\S]*?```/g) || [];
-  const commandish = fences.filter((f) => /\b(npm|pnpm|yarn|bun|make|cargo|go|python|pytest|pip|dotnet|mvn|gradle|docker|bash|sh)\b/.test(f));
-  if (commandish.length) ok(`${commandish.length} runnable command block(s)`);
-  else { bad("no runnable command blocks — an agent cannot act on prose alone"); failures++; }
+  const commandish = fences.filter((f) =>
+    /\b(npm|pnpm|yarn|bun|make|cargo|go|python|pytest|pip|dotnet|mvn|gradle|docker|bash|sh)\b/.test(f));
+  const projectFile = commandish.length > 0;
 
-  // 2. The three things an agent asks first.
-  for (const [name, re] of [
-    ["how to install / set up", /\b(install|setup|set up|bootstrap|dependencies)\b/i],
-    ["how to run the tests", /\b(test|spec|pytest|jest|vitest)\b/i],
-    ["how to build or run it", /\b(build|start|dev|serve|run)\b/i],
-  ]) {
-    if (re.test(text)) ok(name); else { bad(`does not say ${name}`); failures++; }
+  if (projectFile) {
+    ok(`${commandish.length} runnable command block(s)`);
+    // The three questions an agent asks first about a codebase.
+    for (const [name, re] of [
+      ["how to install / set up", /\b(install|setup|set up|bootstrap|dependencies)\b/i],
+      ["how to run the tests", /\b(test|spec|pytest|jest|vitest)\b/i],
+      ["how to build or run it", /\b(build|start|dev|serve|run)\b/i],
+    ]) {
+      if (re.test(text)) ok(name); else { bad(`does not say ${name}`); failures++; }
+    }
+  } else {
+    console.log("  · no command blocks — reading this as a policy file, not a project file");
+    // A policy file still has to be actionable: rules an agent can follow, not
+    // an essay it has to interpret.
+    const imperative = (text.match(/^[-*\d.]*\s*\*{0,2}(never|always|do not|don't|must|use|avoid|refuse|stop)\b/gim) || []).length;
+    if (imperative >= 5) ok(`${imperative} imperative rule(s)`);
+    else { bad("few imperative rules — an agent cannot act on description alone"); failures++; }
   }
 
   // 3. Same placeholder rule as HARNESS.md — a template nobody filled in is worse
