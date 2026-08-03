@@ -12,8 +12,7 @@
   <a href="#quickstart">Quickstart</a> ·
   <a href="#the-four-pillars">Pillars</a> ·
   <a href="#the-cli">CLI</a> ·
-  <a href="docs/manifesto.md">Manifesto</a> ·
-  <a href="docs/adoption.md">Adopt in 30 min</a>
+  <a href="https://singhlabs.dev/bridle/">Product page</a>
 </p>
 
 <p align="center">
@@ -62,11 +61,7 @@ traced, evaluated, governed, recovered — still lives *inside your tools*, impl
 and invisible. When a long-running agent goes sideways at 3am, you can't debug a
 policy that was never written down.
 
-The whole industry is converging on this: harness anatomy write-ups, long-running-
-agent guidance built on progress logs and Git history, research treating the
-harness as a first-class executable document, and agentic-SDLC courses that treat
-agents as governed contributors. Bridle packages that convergence into files you
-can commit today. Read the full argument in the [Manifesto](docs/manifesto.md).
+Bridle puts that policy in a file you commit.
 
 ## Quickstart
 
@@ -106,7 +101,7 @@ Recent runs:
 
 Every event carries the run ID, the agent, the harness **version** and a
 **hash of the harness file** — so if someone edits the harness mid-run, the trace
-shows it. Full walkthrough: [Adopt in 30 minutes](docs/adoption.md).
+shows it.
 
 ## The four pillars
 
@@ -122,7 +117,7 @@ because a run under an incomplete harness has undefined behavior.
 
 Plus a fifth section, **Recovery & Escalation**: a per-run progress log, a resume
 protocol so a restarted agent never redoes finished work, and explicit triggers
-for stopping and calling a human. Deep dive: [docs/pillars.md](docs/pillars.md).
+for stopping and calling a human.
 
 ## Written down, not locked down
 
@@ -184,7 +179,6 @@ bridle/
 │   └── nightly-coding-agent/      # PR-only maintenance bot
 ├── schema/run-log.schema.json     # trace event schema (JSON Schema 2020-12)
 ├── bin/bridle.mjs                 # the whole CLI, ~300 lines, 0 deps
-├── docs/                          # manifesto · pillars · adoption guide
 └── .github/workflows/harness-lint.yml
 ```
 
