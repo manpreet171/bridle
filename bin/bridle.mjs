@@ -244,6 +244,59 @@ function valueOf(args, flag) {
   return i >= 0 && args[i + 1] ? args[i + 1] : null;
 }
 
+// AGENTS.md is the file 60,000+ repos already commit, and nothing lints it.
+// These checks are about whether an agent can ACT on it, not whether it reads
+// nicely — plus the one nobody thinks about: every word is re-sent every turn.
+function lintAgents(fileArg) {
+  const file = fileArg || "AGENTS.md";
+  if (!existsSync(file)) die(`no ${file} found. This is the file your agent reads first — create it.`);
+  const text = readFileSync(file, "utf8");
+  let failures = 0;
+
+  console.log(`Linting ${file}\n`);
+
+  if (!text.trim()) { bad("the file is empty"); process.exit(1); }
+
+  // 1. Runnable commands. An AGENTS.md with no command is a wish, not an instruction.
+  const fences = text.match(/```[\s\S]*?```/g) || [];
+  const commandish = fences.filter((f) => /\b(npm|pnpm|yarn|bun|make|cargo|go|python|pytest|pip|dotnet|mvn|gradle|docker|bash|sh)\b/.test(f));
+  if (commandish.length) ok(`${commandish.length} runnable command block(s)`);
+  else { bad("no runnable command blocks — an agent cannot act on prose alone"); failures++; }
+
+  // 2. The three things an agent asks first.
+  for (const [name, re] of [
+    ["how to install / set up", /\b(install|setup|set up|bootstrap|dependencies)\b/i],
+    ["how to run the tests", /\b(test|spec|pytest|jest|vitest)\b/i],
+    ["how to build or run it", /\b(build|start|dev|serve|run)\b/i],
+  ]) {
+    if (re.test(text)) ok(name); else { bad(`does not say ${name}`); failures++; }
+  }
+
+  // 3. Same placeholder rule as HARNESS.md — a template nobody filled in is worse
+  //    than no file, because the agent follows it literally.
+  const placeholders = (text.match(/<[A-Za-z][^>\n]{0,60}>/g) || []).filter((p) => {
+    if (/^<(https?|\/|!--)/.test(p)) return false;
+    if (p.includes("@")) return false;
+    return !/^<\/?(a|b|i|em|br|hr|p|ul|li|ol|code|pre|img|div|span|strong|sub|sup|details|summary|table|tr|td|th)\b/i.test(p);
+  });
+  if (placeholders.length === 0) ok("no unfilled placeholders");
+  else { bad(`${placeholders.length} unfilled placeholder(s), e.g. ${placeholders[0]}`); failures++; }
+
+  // 4. The cost nobody counts. This file is prepended to context every single
+  //    turn, so its length is a per-turn tax for as long as the project exists.
+  const words = text.trim().split(/\s+/).length;
+  const tokens = Math.round(text.length / 4); // ~4 chars/token, English prose
+  const line = `${words} words ≈ ${tokens} tokens, re-sent every turn`;
+  if (tokens <= 1500) ok(`size: ${line}`);
+  else if (tokens <= 3000) { console.log(`  ! size: ${line} — trim it, this is a per-turn tax`); }
+  else { bad(`size: ${line} — over 3k tokens per turn is a real cost, cut it`); failures++; }
+
+  console.log(failures === 0
+    ? `\nPASS — an agent can act on this.`
+    : `\nFAIL — ${failures} problem(s). Your agent is reading this file on every run.`);
+  process.exit(failures === 0 ? 0 : 1);
+}
+
 const [cmd, sub, ...rest] = process.argv.slice(2);
 switch (cmd) {
   case "init": init(); break;
@@ -256,6 +309,7 @@ switch (cmd) {
     lint(fileArg, tier);
     break;
   }
+  case "agents": lintAgents([sub, ...rest].find((a) => a && !a.startsWith("--"))); break;
   case "status": status(); break;
   case "run":
     if (sub === "start") runStart(rest);
@@ -268,6 +322,7 @@ switch (cmd) {
 
   bridle init                          scaffold HARNESS.md, AGENTS.md, prompts/, skills/, logs/
   bridle lint [file] [--tier 1|2|3]    verify a HARNESS file honors the pillars (default tier 3)
+  bridle agents [file]                 lint AGENTS.md — can an agent actually act on it?
   bridle run start <workflow> [--agent <id>] [--harness <file>]
   bridle run log <event> [--phase p] [--prompt file] [--detail '{...}']
   bridle run end <good|bad> [--detail '...']

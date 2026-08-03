@@ -36,6 +36,16 @@ AGENTS.md    →  the OS for your project        (you probably have this)
 HARNESS.md   →  the OS for every agent run     (this is Bridle)
 ```
 
+Already have an `AGENTS.md` and no interest in a second file? Use just this:
+
+```bash
+npx github:manpreet171/bridle agents
+```
+
+It lints the file 60,000+ repos already commit — whether an agent can actually
+act on it, and what it costs you in tokens on every single turn. Nothing else
+lints it.
+
 Prompts became artifacts. **Now runs become artifacts too.**
 
 ## Before / after
@@ -153,6 +163,7 @@ One file, zero dependencies, Node 18+: [`bin/bridle.mjs`](bin/bridle.mjs).
 | ------- | ------------ |
 | `bridle init` | Scaffold `HARNESS.md`, `AGENTS.md`, `prompts/`, `skills/`, `logs/` |
 | `bridle lint [file] [--tier 1\|2\|3]` | Verify a harness honors the pillars for your tier + no unfilled placeholders. Exit 1 on failure — CI-friendly |
+| `bridle agents [file]` | Lint `AGENTS.md`: runnable commands, the three things an agent asks first, unfilled placeholders, and what the file costs you per turn |
 | `bridle run start <workflow>` | Mint a `run_id`, stamp harness version + SHA-256 hash |
 | `bridle run log <event>` | Append a trace event (`tool_call`, `code_edit`, `db_write`, `api_hit`, `check_pass`, `check_fail`, `escalation`, `note`) |
 | `bridle run end <good\|bad>` | Close the run with a Charter verdict |
