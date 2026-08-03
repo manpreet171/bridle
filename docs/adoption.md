@@ -5,7 +5,7 @@ You don't need new infrastructure. You need five files and one habit.
 ## Minute 0–5: scaffold
 
 ```bash
-npx github:YOURNAME/bridle init
+npx github:manpreet171/bridle init
 # or, with the repo cloned:
 node bin/bridle.mjs init
 ```

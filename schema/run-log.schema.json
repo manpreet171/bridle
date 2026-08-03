@@ -4,7 +4,14 @@
   "title": "Bridle run-log event",
   "description": "One line of a logs/run-<run_id>.jsonl file. Append-only. Every event is stamped with the run and the harness version that governed it.",
   "type": "object",
-  "required": ["ts", "run_id", "harness_version", "agent_id", "event", "phase"],
+  "required": [
+    "ts",
+    "run_id",
+    "harness_version",
+    "agent_id",
+    "event",
+    "phase"
+  ],
   "properties": {
     "ts": {
       "type": "string",
@@ -29,7 +36,13 @@
     },
     "phase": {
       "type": "string",
-      "enum": ["plan", "act", "evaluate", "escalate", "recover"],
+      "enum": [
+        "plan",
+        "act",
+        "evaluate",
+        "escalate",
+        "recover"
+      ],
       "description": "Which phase of the run loop this event belongs to"
     },
     "event": {
@@ -44,7 +57,8 @@
         "check_pass",
         "check_fail",
         "escalation",
-        "note"
+        "note",
+        "harness_drift"
       ]
     },
     "detail": {
@@ -58,8 +72,15 @@
     },
     "verdict": {
       "type": "string",
-      "enum": ["good", "bad"],
+      "enum": [
+        "good",
+        "bad"
+      ],
       "description": "Only on run_end: did the run meet the Charter's definition of a good run"
+    },
+    "harness_hash_at_start": {
+      "type": "string",
+      "description": "the harness hash recorded at run start, present only when the file changed mid-run"
     }
   },
   "additionalProperties": false

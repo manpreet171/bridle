@@ -116,8 +116,15 @@ function lint(fileArg, tier) {
   }
 
   console.log("\nUnfilled placeholders:");
-  const placeholders = text.match(/<[a-z][^>\n]{2,60}>/g) || [];
-  const real = placeholders.filter((p) => !/^<(https?|\/|!--)/.test(p));
+  // Uppercase counts too, and so does a one-character field: the repo's own
+  // template shipped a `<N>` that this linter could not see.
+  const placeholders = text.match(/<[A-Za-z][^>\n]{0,60}>/g) || [];
+  const real = placeholders.filter((p) => {
+    if (/^<(https?|\/|!--)/.test(p)) return false; // URLs, closing tags, comments
+    if (p.includes("@")) return false;             // an email in angle brackets is a filled field
+    // Ordinary HTML that belongs in prose, not an unfilled slot.
+    return !/^<\/?(a|b|i|em|br|hr|p|ul|li|ol|code|pre|img|div|span|strong|sub|sup|details|summary|table|tr|td|th)\b/i.test(p);
+  });
   if (real.length === 0) ok("none");
   else { bad(`${real.length} template placeholder(s) still unfilled, e.g. ${real[0]}`); failures++; }
 
@@ -144,13 +151,36 @@ function runStart(args) {
   const runFile = join(LOGS, `run-${runId}.jsonl`);
   const base = { ts, run_id: runId, harness_version: version, harness_hash: hash, agent_id: agent };
   appendEvent(runFile, { ...base, phase: "plan", event: "run_start", detail: { harness_file: file } });
-  writeFileSync(OPEN_RUN, JSON.stringify({ runId, runFile, version, hash, agent }, null, 2));
+  // The harness path is stored so later events can re-hash the file instead of
+  // trusting a cached value. Without it, a mid-run edit is undetectable — which
+  // is the one thing the trace is supposed to prove.
+  writeFileSync(OPEN_RUN, JSON.stringify({ runId, runFile, harnessFile: file, version, hash, agent }, null, 2));
   console.log(runId);
 }
 
 function openRun() {
   if (!existsSync(OPEN_RUN)) die("no open run. Start one with `bridle run start <workflow>`.");
   return JSON.parse(readFileSync(OPEN_RUN, "utf8"));
+}
+
+// Re-hash the harness on every event. If it moved since `run start`, say so
+// loudly and record it — a trace that silently carries the old hash is worse
+// than no trace, because it looks like proof.
+function currentHarness(r) {
+  if (!r.harnessFile || !existsSync(r.harnessFile)) return { version: r.version, hash: r.hash, drifted: false };
+  const { version, hash } = harnessMeta(r.harnessFile);
+  return { version, hash, drifted: hash !== r.hash };
+}
+
+function noteDrift(r, now) {
+  if (!now.drifted) return;
+  console.error(`WARNING: the harness changed mid-run (${r.hash} → ${now.hash}). Recorded as harness_drift.`);
+  appendEvent(r.runFile, {
+    ts: new Date().toISOString(), run_id: r.runId, harness_version: now.version,
+    harness_hash: now.hash, harness_hash_at_start: r.hash, agent_id: r.agent,
+    phase: "evaluate", event: "harness_drift",
+    detail: { harness_file: r.harnessFile, from: r.hash, to: now.hash },
+  });
 }
 
 function runLog(args) {
@@ -165,10 +195,13 @@ function runLog(args) {
   if (detailArg) {
     try { detail = JSON.parse(detailArg); } catch { detail = { note: detailArg }; }
   }
+  const now = currentHarness(r);
+  noteDrift(r, now);
   const e = {
-    ts: new Date().toISOString(), run_id: r.runId, harness_version: r.version,
-    harness_hash: r.hash, agent_id: r.agent, phase, event, detail,
+    ts: new Date().toISOString(), run_id: r.runId, harness_version: now.version,
+    harness_hash: now.hash, agent_id: r.agent, phase, event, detail,
   };
+  if (now.drifted) e.harness_hash_at_start = r.hash;
   if (promptFile) e.prompt_file = promptFile;
   appendEvent(r.runFile, e);
   console.log(`logged ${event} → ${r.runFile}`);
@@ -178,10 +211,12 @@ function runEnd(args) {
   const verdict = args[0];
   if (!["good", "bad"].includes(verdict)) die("usage: bridle run end <good|bad> [--detail '...']");
   const r = openRun();
+  const now = currentHarness(r);
+  noteDrift(r, now);
   appendEvent(r.runFile, {
-    ts: new Date().toISOString(), run_id: r.runId, harness_version: r.version,
-    harness_hash: r.hash, agent_id: r.agent, phase: "evaluate", event: "run_end",
-    verdict, detail: { note: valueOf(args, "--detail") || "" },
+    ts: new Date().toISOString(), run_id: r.runId, harness_version: now.version,
+    harness_hash: now.hash, agent_id: r.agent, phase: "evaluate", event: "run_end",
+    verdict, detail: { note: valueOf(args, "--detail") || "", harness_drift: now.drifted },
   });
   writeFileSync(OPEN_RUN, "{}");
   console.log(`run ${r.runId} closed: ${verdict.toUpperCase()}`);
