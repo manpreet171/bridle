@@ -293,9 +293,66 @@ function lintAgents(fileArg) {
     return !/^<\/?(a|b|i|em|br|hr|p|ul|li|ol|code|pre|img|div|span|strong|sub|sup|details|summary|table|tr|td|th)\b/i.test(p);
   });
   if (placeholders.length === 0) ok("no unfilled placeholders");
-  else { bad(`${placeholders.length} unfilled placeholder(s), e.g. ${placeholders[0]}`); failures++; }
+  // Warning, not a failure: in someone else's file `<name>` is as likely to be
+  // documented argument syntax as an unfilled field, and we cannot tell which.
+  // Only the obviously-unfilled kind fails.
+  // Judge the placeholders themselves, not the whole document — a file that
+  // merely mentions "todo" in a sentence is not a file with an unfilled field.
+  else if (placeholders.some((p) => /^<(your|yourname|your_name|todo|fixme|insert|fill|replace|e\.?g\.?)\b/i.test(p))) {
+    const obvious = placeholders.find((p) => /^<(your|yourname|your_name|todo|fixme|insert|fill|replace|e\.?g\.?)\b/i.test(p));
+    bad(`unfilled template text an agent will follow literally: ${obvious}`);
+    failures++;
+  } else {
+    console.log(`  ! ${placeholders.length} angle-bracket field(s), e.g. ${placeholders[0]} — check these are argument syntax, not unfilled template text`);
+  }
 
-  // 4. The cost nobody counts. This file is prepended to context every single
+  // 4. What the file TELLS the agent to do. Other linters check whether an
+  //    instruction file is fresh. Nobody checks whether it is dangerous — and a
+  //    line in here is not a suggestion, it is a step the agent will follow.
+  //    Every pattern below was found in a real company's public file.
+  const DANGER = [
+    [/\bsudo\b/i, "runs sudo — writes outside the checkout"],
+    [/curl[^|\n]*\|\s*(ba)?sh\b|wget[^|\n]*\|\s*(ba)?sh\b/i, "pipes a remote script into a shell"],
+    [/\brm\s+-rf\b|--no-preserve-root/i, "destructive delete"],
+    [/--no-verify\b|push\s+(-f|--force)\b/i, "skips a check or rewrites history"],
+    [/verify\s*=\s*False|rejectUnauthorized\s*:\s*false|NODE_TLS_REJECT_UNAUTHORIZED/i, "disables TLS verification"],
+    [/\bchmod\s+777\b/i, "world-writable permissions"],
+  ];
+  // A path outside the repo only matters if the line actually WRITES there.
+  // Files mention `~/.config/...` descriptively all the time, and flagging
+  // documentation as a dangerous instruction is how this stops being read.
+  const OUTSIDE = /(^|[\s`(])(\/etc\/|~\/\.[a-z]|\$HOME\/\.[a-z])/i;
+  const WRITES = /\b(cp|mv|install|tee|mkdir|chmod|chown|rm|ln|write|append)\b|>>?\s*[~/$]/i;
+  // A line that forbids a thing is not a line that instructs it. "Never use
+  // sudo" must not be reported as "runs sudo" — that false alarm is how a
+  // checking tool gets ignored.
+  const forbids = /\b(never|do not|don'?t|must not|avoid|forbidden|prohibited)\b/i;
+  const danger = [];
+  text.split("\n").forEach((ln, i) => {
+    if (forbids.test(ln)) return;
+    for (const [re, why] of DANGER) {
+      if (re.test(ln)) { danger.push(`line ${i + 1}: ${why} — ${ln.trim().slice(0, 70)}`); return; }
+    }
+    if (OUTSIDE.test(ln) && WRITES.test(ln)) {
+      danger.push(`line ${i + 1}: writes to a path outside the repo — ${ln.trim().slice(0, 70)}`);
+    }
+  });
+  if (danger.length === 0) ok("nothing in here tells the agent to do something dangerous");
+  else {
+    bad(`${danger.length} dangerous instruction(s) your agent will follow literally`);
+    for (const d of danger.slice(0, 4)) console.log(`      ${d}`);
+    failures++;
+  }
+
+  // 5. Does it say what the agent must NOT do? A file of only permissions
+  //    leaves every boundary to be inferred, and agents do not infer boundaries.
+  const prohibitions = (text.match(/\b(never|do not|don'?t|must not)\b/gi) || []).length;
+  if (prohibitions >= 3) ok(`${prohibitions} prohibition(s) — the agent knows where the edges are`);
+  else {
+    console.log(`  ! only ${prohibitions} prohibition(s) — nothing here says what the agent must never touch`);
+  }
+
+  // 6. The cost nobody counts. This file is prepended to context every single
   //    turn, so its length is a per-turn tax for as long as the project exists.
   const words = text.trim().split(/\s+/).length;
   const tokens = Math.round(text.length / 4); // ~4 chars/token, English prose

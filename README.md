@@ -42,9 +42,11 @@ Already have an `AGENTS.md` and no interest in a second file? Use just this:
 npx github:manpreet171/bridle agents
 ```
 
-It lints the file 60,000+ repos already commit — whether an agent can actually
-act on it, and what it costs you in tokens on every single turn. Nothing else
-lints it.
+It reads the file your agent reads first and asks what nobody else asks:
+**does anything in here tell the agent to do something dangerous?** A `sudo`, a
+`curl | sh`, a write outside the checkout — those are not suggestions, they are
+steps your agent will follow. It also reports whether the file says what to never
+touch, and what it costs you in tokens on every single turn.
 
 Prompts became artifacts. **Now runs become artifacts too.**
 
@@ -163,7 +165,7 @@ One file, zero dependencies, Node 18+: [`bin/bridle.mjs`](bin/bridle.mjs).
 | ------- | ------------ |
 | `bridle init` | Scaffold `HARNESS.md`, `AGENTS.md`, `prompts/`, `skills/`, `logs/` |
 | `bridle lint [file] [--tier 1\|2\|3]` | Verify a harness honors the pillars for your tier + no unfilled placeholders. Exit 1 on failure — CI-friendly |
-| `bridle agents [file]` | Lint `AGENTS.md`: runnable commands, the three things an agent asks first, unfilled placeholders, and what the file costs you per turn |
+| `bridle agents [file]` | Lint `AGENTS.md`: dangerous instructions the agent will follow literally, whether it says what to never touch, actionability, unfilled template text, and what the file costs you per turn |
 | `bridle run start <workflow>` | Mint a `run_id`, stamp harness version + SHA-256 hash |
 | `bridle run log <event>` | Append a trace event (`tool_call`, `code_edit`, `db_write`, `api_hit`, `check_pass`, `check_fail`, `escalation`, `note`) |
 | `bridle run end <good\|bad>` | Close the run with a Charter verdict |
